@@ -40,7 +40,7 @@ if (!class_exists("ueg_leaflet")) {
 
 		}
 		
-		function ueg_leaflet_install() {
+		function install() {
 			
 			global $wpdb;
 			global $ueg_leaflet_version;
@@ -56,12 +56,36 @@ if (!class_exists("ueg_leaflet")) {
 				UNIQUE KEY id (id) 
 			);";
 			
-			 
+			$congress_bio_table = $wpdb->base_prefix . "ueg_leaflet_congressional_bios";
+			$congress_bio_sql = "CREATE TABLE $congress_bio_table (
+				id mediumint(9) NOT NULL AUTO_INCREMENT,
+				geo_id INT NOT NULL,
+				first_name text NOT NULL,
+				last_name text NOT NULL,
+				party tinytext NOT NULL,
+				twitter_handle text,
+				twitter_url text,
+				phone INT,
+				email TEXT,
+				webform_url TEXT
+				UNIQUE KEY id (id)
+			);"; 
 			
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($geo_table);
 			
-			add_option("ueg_leaflet_version", $ueg_leaflet_version)
+			// write geodata table
+			dbDelta($geo_table);
+			add_option("ueg_leaflet_version", $ueg_leaflet_version);
+			
+			// write congressional bio table
+			dbDelta($congress_bio_table);
+			add_option("ueg_leaflet_version", $ueg_leaflet_version);
+		}
+		
+		function install_data() {
+		
+			// global $wpdb;
+			
 		}
 		
 		function get_admin_options() {
@@ -247,5 +271,9 @@ if (isset($ueg_leaflet)) {
 	wp_register_style('wp_convio_style', plugins_url('style.css', __FILE__));
 
 }
+
+// Install, Upgrade, Uninstall
+register_activation_hook(__FILE__,array('ueg_leaflet', 'install'));
+register_activation_hook(__FILE__,array('ueg_leaflet','install_data'));
 
 ?>
