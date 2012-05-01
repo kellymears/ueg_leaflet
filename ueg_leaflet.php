@@ -10,8 +10,8 @@
 	License: GPL2
 */
 
-/*	
-	Copyright 2012 United To End Genocide (email : info@endgenocide.org)
+/*
+	 Copyright 2012 United To End Genocide (email : info@endgenocide.org)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as 
@@ -33,8 +33,75 @@ if (!class_exists("ueg_leaflet")) {
 		
 		var $admin_options_name = "ueg_leaflet_admin_options";
 		var $admin_options;
+                		
+		function __construct() {
 		
-		public $states = array('AL'=>"Alabama",
+			$this->admin_options = $this->get_admin_options();
+
+		}
+		
+		function get_admin_options() {
+			
+			$ueg_leaflet_admin_options = array('leaflet_thing' => 'Foo');
+
+										   
+			$admin_options = get_option('ueg_leaflet_admin_options');
+			
+			if (!empty($admin_options)) {
+				foreach ($admin_options as $key => $option)
+					$ueg_leaflet_admin_options[$key] = $option;
+			}
+			
+			update_option($this->admin_options_name, $ueg_leaflet_admin_options);
+			
+			return $ueg_leaflet_admin_options;
+		}
+				
+		// Prints out the admin page
+		function admin_page() {
+											
+			if (isset($_POST['update_ueg_leaflet_options'])) { 
+			
+				if (isset($_POST['ueg_leaflet_thing'])) {
+					$this->admin_options['thing'] = $_POST['ueg_leaflet_thing'];
+				}
+					
+				update_option($this->admin_options_name, $this->admin_options);
+				
+				?>
+				
+				<div class="updated"><p><strong><?php _e("Settings Updated.", "ueg_leaflet");?></strong></p></div>
+				
+			<?php } ?>
+			
+			<div class="wrap">	
+				<form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
+					
+					<h2><?php _e('WordPress - Leaflet Options', 'ueg_leaflet'); ?></h2>
+					
+					<p><strong>Pretty leaflets. So pretty.<br />
+					</strong>Much love,<br /> 
+					K.</p>
+					
+					<h3><?php _e('Leaflet Thing', 'ueg_leaflet'); ?></h3>
+					<input type="text" name="ueg_leaflet_thing" 
+						value="<?php echo $this->admin_options['leaflet_thing']; ?>">
+
+					<div class="submit">
+						<input type="submit" name="update_ueg_leaflet_options" 
+							value="<?php _e('Update Settings', 'ueg_leaflet') ?>" />
+					</div>
+					
+				</form>
+			</div>
+			
+		<?php } 
+		
+		// End function print_admin_page()
+		
+		function get_geodata() {
+			// Yeah, you heard me. Geodata.
+			$states = array('AL'=>"Alabama",
 		                'AK'=>"Alaska",  
 		                'AZ'=>"Arizona",  
 		                'AR'=>"Arkansas",  
@@ -84,111 +151,15 @@ if (!class_exists("ueg_leaflet")) {
 		                'WA'=>"Washington",  
 		                'WV'=>"West Virginia",  
 		                'WI'=>"Wisconsin",  
-		                'WY'=>"Wyoming");
-                		
-		function __construct() {
-		
-			// $this->admin_options = $this->get_admin_options();
-
+		                'WY'=>"Wyoming"); // lol
+			return $states;
 		}
-		
-		function get_admin_options() {
-			
-			/* $ueg_leaflet_admin_options = array('host' => 'Enter Host Here',
-						                     'short_name' => 'Enter Short Name Here',
-						                     'api_key' => 'Enter API Key Here',
-						                     'login_name' => 'Enter Login Name Here',
-						                     'login_password' => 'Enter Login Password Here'); */
-
-										   
-			$admin_options = get_option('ueg_leaflet_admin_options');
-			
-			if (!empty($admin_options)) {
-				foreach ($admin_options as $key => $option)
-					$ueg_leaflet_admin_options[$key] = $option;
-			}
-			
-			update_option($this->admin_options_name, $ueg_leaflet_admin_options);
-			
-			return $ueg_leaflet_admin_options;
-		}
-				
-		// Prints out the admin page
-		function admin_page() {
-											
-			if (isset($_POST['update_ueg_leaflet_options'])) { 
-			
-				if (isset($_POST['ueg_leaflet_host'])) {
-					$this->admin_options['host'] = $_POST['ueg_leaflet_host'];
-				}
-					
-				if (isset($_POST['ueg_leaflet_short_name'])) {
-					$this->admin_options['short_name'] = $_POST['ueg_leaflet_short_name'];
-				}
-					
-				if (isset($_POST['ueg_leaflet_api_key'])) {
-					$this->admin_options['api_key'] = $_POST['ueg_leaflet_api_key'];
-				}
-				
-				if (isset($_POST['ueg_leaflet_login_name'])) {
-					$this->admin_options['login_name'] = $_POST['ueg_leaflet_login_name'];
-				}
-				
-				if (isset($_POST['ueg_leaflet_login_name'])) {
-					$this->admin_options['login_password'] = $_POST['ueg_leaflet_login_password'];
-				}
-					
-				update_option($this->admin_options_name, $this->admin_options);
-				
-				?>
-				
-				<div class="updated"><p><strong><?php _e("Settings Updated.", "ueg_leaflet");?></strong></p></div>
-				
-			<?php } ?>
-			
-			<div class="wrap">	
-				<form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
-					
-					<h2><?php _e('WordPress - Convio Options', 'ueg_leaflet'); ?></h2>
-					
-					<p><strong>This plugin is a work in progress.<br />
-					</strong>Much love,<br /> 
-					K.</p>
-					
-					<h3><?php _e('Convio Host', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_host" 
-						value="<?php echo $this->admin_options['host']; ?>">
-					
-					<h3><?php _e('Convio Short Name', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_short_name" 
-						value="<?php echo $this->admin_options['short_name']; ?>">
-					
-					<h3><?php _e('Convio API Key', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_api_key" 
-						value="<?php echo $this->admin_options['api_key']; ?>">
-					
-					<h3><?php _e('Convio Login Name', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_login_name" 
-						value="<?php echo $this->admin_options['login_name']; ?>">
-					
-					<h3><?php _e('Convio Login Password', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_login_password" 
-						value="<?php echo $this->admin_options['login_password']; ?>">
-
-					<div class="submit">
-						<input type="submit" name="update_ueg_leaflet_options" 
-							value="<?php _e('Update Settings', 'ueg_leaflet') ?>" />
-					</div>
-					
-				</form>
-			</div>
-			
-		<?php } 
-		
-		// End function print_admin_page()
 				
 		function leaflet_shortcode($attr) {
-			return $leaflet;
+			$leaflet = $this->get_geodata();
+			echo "<pre>";
+			print_r($leaflet);
+			echo "</pre>";
 		}
 	}
 }
@@ -219,9 +190,9 @@ if (isset($ueg_leaflet)) {
 	add_action('admin_menu', 'ueg_leaflet_ap');
 	// add_action('init',  array(&$ueg_leaflet, 'create_leaflet_post_types'));
 	
-	// Scripting + Styling
-	wp_register_script('ueg_leaflet_script', plugins_url('script.js', __FILE__));
-	wp_register_style('ueg_leaflet_style', plugins_url('style.css', __FILE__));
+	// Leaflet JS/CSS
+	wp_register_script('ueg_leaflet_script', 'http://code.leafletjs.com/leaflet-0.3.1/leaflet.js');
+	wp_register_style('ueg_leaflet_style', 'http://code.leafletjs.com/leaflet-0.3.1/leaflet.css');
 	wp_enqueue_script('ueg_leaflet_script');
 	wp_enqueue_style('ueg_leaflet_style');
 
