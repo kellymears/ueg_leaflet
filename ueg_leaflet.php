@@ -40,10 +40,35 @@ if (!class_exists("ueg_leaflet")) {
 
 		}
 		
+		function ueg_leaflet_install() {
+			
+			global $wpdb;
+			global $ueg_leaflet_version;
+			
+			$geo_table = $wpdb->base_prefix . "ueg_leaflet_congressional_districts";
+			$geo_sql = "CREATE TABLE $geo_table (
+				id mediumint(9) NOT NULL AUTO_INCREMENT,
+				state tinytext NOT NULL,
+				district tinytext NOT NULL,
+				marker text NOT NULL,
+				geometry text NOT NULL,
+				geometry_vertex_count text NOT NULL,
+				UNIQUE KEY id (id) 
+			);";
+			
+			 
+			
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			dbDelta($geo_table);
+			
+			add_option("ueg_leaflet_version", $ueg_leaflet_version)
+		}
+		
 		function get_admin_options() {
 			
-			$ueg_leaflet_admin_options = array('leaflet_thing' => 'Foo');
-
+			$ueg_leaflet_admin_options = array('nytimes_api_key' => 'Enter NY Times API Key Here',
+												'nytimes_api_ver' => 'v3',
+												'sunlight_api_key' => 'Enter Sunlight Labs API Key Here');
 										   
 			$admin_options = get_option('ueg_leaflet_admin_options');
 			
@@ -62,8 +87,16 @@ if (!class_exists("ueg_leaflet")) {
 											
 			if (isset($_POST['update_ueg_leaflet_options'])) { 
 			
-				if (isset($_POST['ueg_leaflet_thing'])) {
-					$this->admin_options['thing'] = $_POST['ueg_leaflet_thing'];
+				if (isset($_POST['ueg_leaflet_nytimes_api_key'])) {
+					$this->admin_options['nytimes_api_key'] = $_POST['ueg_leaflet_nytimes_api_key'];
+				}
+				
+				if (isset($_POST['ueg_leaflet_nytimes_api_ver'])) {
+					$this->admin_options['nytimes_api_ver'] = $_POST['ueg_leaflet_nytimes_api_ver'];
+				}
+				
+				if (isset($_POST['ueg_leaflet_sunlight_api_key'])) {
+					$this->admin_options['sunlight_api_key'] = $_POST['ueg_leaflet_sunlight_api_key'];
 				}
 					
 				update_option($this->admin_options_name, $this->admin_options);
@@ -83,9 +116,17 @@ if (!class_exists("ueg_leaflet")) {
 					</strong>Much love,<br /> 
 					K.</p>
 					
-					<h3><?php _e('Leaflet Thing', 'ueg_leaflet'); ?></h3>
-					<input type="text" name="ueg_leaflet_thing" 
-						value="<?php echo $this->admin_options['leaflet_thing']; ?>">
+					<h3><?php _e('Sunlight Labs API Key', 'ueg_leaflet'); ?></h3>
+					<input type="text" name="ueg_leaflet_sunlight_api_key" 
+						value="<?php echo $this->admin_options['sunlight_api_key']; ?>">
+					
+					<h3><?php _e('NY Times API Key', 'ueg_leaflet'); ?></h3>
+					<input type="text" name="ueg_leaflet_nytimes_api_key" 
+						value="<?php echo $this->admin_options['nytimes_api_key']; ?>">
+						
+					<h3><?php _e('NY Times API Ver.', 'ueg_leaflet'); ?></h3>
+					<input type="text" name="ueg_leaflet_nytimes_api_ver" 
+						value="<?php echo $this->admin_options['nytimes_api_ver']; ?>">	
 
 					<div class="submit">
 						<input type="submit" name="update_ueg_leaflet_options" 
@@ -100,6 +141,7 @@ if (!class_exists("ueg_leaflet")) {
 		// End function print_admin_page()
 		
 		function get_geodata() {
+			
 			// Yeah, you heard me. Geodata.
 			$states = array('AL'=>"Alabama",
 		                'AK'=>"Alaska",  
@@ -156,10 +198,15 @@ if (!class_exists("ueg_leaflet")) {
 		}
 				
 		function leaflet_shortcode($attr) {
+		
 			$leaflet = $this->get_geodata();
-			echo "<pre>";
-			print_r($leaflet);
-			echo "</pre>";
+			
+			$leaflet = '<div id="map" style="width: 680px; height: 300px;"></div>';
+			
+			wp_enqueue_script('script.js', WP_CONTENT_URL .'/plugins/ueg_leaflet/script.js', 0, '1.0.0', 'in_footer');
+
+			return $leaflet;
+			
 		}
 	}
 }
@@ -195,6 +242,9 @@ if (isset($ueg_leaflet)) {
 	wp_register_style('ueg_leaflet_style', 'http://code.leafletjs.com/leaflet-0.3.1/leaflet.css');
 	wp_enqueue_script('ueg_leaflet_script');
 	wp_enqueue_style('ueg_leaflet_style');
+	
+	// Plugin JS/CSS
+	wp_register_style('wp_convio_style', plugins_url('style.css', __FILE__));
 
 }
 
