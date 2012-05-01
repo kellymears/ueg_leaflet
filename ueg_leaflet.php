@@ -1,9 +1,9 @@
 <?php
 
 /*
-	Plugin Name: WordPress - Convio Open API
+	Plugin Name: WP Leaflet
 	Plugin URI: http://endgenocide.org/code
-	Description: Convio Luminate Integration for WordPress.
+	Description: Leaflet Maps and Geodata for United to End Genocide.
 	Version: 0.1
 	Author: Kelly Mears
 	Author URI: http://kellymears.me
@@ -88,7 +88,7 @@ if (!class_exists("ueg_leaflet")) {
                 		
 		function __construct() {
 		
-			$this->admin_options = $this->get_admin_options();
+			// $this->admin_options = $this->get_admin_options();
 
 		}
 		
@@ -187,107 +187,8 @@ if (!class_exists("ueg_leaflet")) {
 		
 		// End function print_admin_page()
 				
-		function convioaction_shortcode($attr) {
-			
-			if (isset($_POST['ueg_leaflet_submit'])) { 
-			
-				$this->configure_convio();
-				
-				$this->convio_data['alert_type'] = 'action';
-				$this->convio_data['subject'] = 'subject';
-				$this->convio_data['title'] = 'Ms';
-				
-				if(isset($attr['alert_id'])) {
-					$this->convio_data['alert_id'] = $attr['alert_id'];
-				}
-				if(isset($_POST['ueg_leaflet_first_name'])) { 
-					$this->convio_data['first_name'] = $_POST['ueg_leaflet_first_name'];
-				}
-				if(isset($_POST['ueg_leaflet_last_name'])) { 
-					$this->convio_data['last_name'] = $_POST['ueg_leaflet_last_name'];
-				}
-				if(isset($_POST['ueg_leaflet_street1'])) { 
-					$this->convio_data['street1'] = $_POST['ueg_leaflet_street1'];
-				}
-				if(isset($_POST['ueg_leaflet_city'])) { 
-					$this->convio_data['city'] = $_POST['ueg_leaflet_city'];
-				}
-				if(isset($_POST['ueg_leaflet_state'])) { 
-					$this->convio_data['state'] = $_POST['ueg_leaflet_state'];
-				}
-				if(isset($_POST['ueg_leaflet_phone'])) { 
-					$this->convio_data['phone'] = $_POST['ueg_leaflet_phone'];
-				}
-				if(isset($_POST['ueg_leaflet_zip'])) { 
-					$this->convio_data['zip'] = $_POST['ueg_leaflet_zip'];
-				}
-				if(isset($_POST['ueg_leaflet_email'])) { 
-					$this->convio_data['email'] = $_POST['ueg_leaflet_email'];
-				}
-								
-				// Make API call
-				$response = $this->convio_api->call('SRAdvocacyAPI_takeAction', $this->convio_data);
-				
-				// Poke and Prod Convio Response
-				if(isset($response)) {
-					
-					$messages = '<div class="ueg_leaflet_post ueg_leaflet_messages">';
-					
-					// If respondant has already taken action on this issue:
-					if($response->code = 5806) {
-						
-						$messages .= '<div class="error"><p><strong>';
-						$messages .= __("You've already taken action on this issue. Thanks!", "ueg_leaflet");
-						$messages .= '</strong></p></div>';
-					
-					// If respondant has not already taken action on this issue:	
-					} elseif($response->code != 5806) {
-					
-						$messages .= '<div class="updated"><p><strong>';
-						$messages .= __("Thank You For Gently Prodding Your Representative With A Digital Stick.", "ueg_leaflet");
-						$messages .= '</strong></p></div>';
-						
-					}
-					
-					$messages .= '</div>';
-					
-					// Return our message(s)
-					return $messages;
-				}
-			 
-			 } else { 
-	
-				$shortcode = '<div class="ueg_leaflet_post ueg_leaflet_form" style="width:'. $attr['width'] .'px; ';
-				if($attr['float']) { $shortcode .= 'float: '. $attr['float'] .';'; } 
-				$shortcode .= '"><form method="post" action="'. $_SERVER['REQUEST_URI'] .'">
-							<h3>'. __('First Name', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_first_name" 
-								value="'. $this->convio_data['first_name'] .'">
-							<h3>'. __('Last Name', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_last_name" 
-								value="'. $this->convio_data['last_name'] .'">
-							<h3>'. __('Street', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_street1" 
-								value="'. $this->convio_data['street1'] .'">
-							<h3>'. __('City', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_city" 
-								value="'. $this->convio_data['city'] .'">
-							<h3>'. __('State', 'ueg_leaflet') .'</h3><select name="ueg_leaflet_state">'; 
-				
-				foreach($this->states as $abbr => $state) { 
-					$shortcode .= '<option value="'. $abbr .'">'. $state .'</option>';
-				} 
-				
-				$shortcode .= '</select>
-							<h3>'. __('Zip', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_zip" 
-								value="'. $this->convio_data['zip'] .'">
-							<h3>'. __('Phone', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_phone" 
-								value="'. $this->convio_data['phone'] .'">
-							<h3>'. __('Email', 'ueg_leaflet') .'</h3><input type="text" name="ueg_leaflet_email" 
-								value="'. $this->convio_data['email'] .'">
-							<div class="submit">
-								<input type="submit" name="ueg_leaflet_submit" value="'. __('Submit', 'ueg_leaflet') .'" />
-							</div>
-							</form></div>';	
-				
-				return $shortcode; 
-			}
+		function leaflet_shortcode($attr) {
+			return $leaflet;
 		}
 	}
 }
@@ -302,7 +203,8 @@ if (!function_exists("ueg_leaflet_ap")) {
 	function ueg_leaflet_ap() {
 		global $ueg_leaflet;
 		if (function_exists('add_options_page')) {
-			add_options_page('Leaflet', 'Leaflet', 9, basename(__FILE__), array(&$ueg_leaflet, 'admin_page'));
+			add_options_page('Leaflet', 'Leaflet', 9, basename(__FILE__), 
+								array(&$ueg_leaflet, 'admin_page'));
 		}
 	}
 }
@@ -311,11 +213,11 @@ if (!function_exists("ueg_leaflet_ap")) {
 if (isset($ueg_leaflet)) {
 
 	// Shortcode
-	add_shortcode('convioaction', array(&$ueg_leaflet, 'convioaction_shortcode'));
+	add_shortcode('leaflet', array(&$ueg_leaflet, 'leaflet_shortcode'));
 
 	// Actions
 	add_action('admin_menu', 'ueg_leaflet_ap');
-	add_action('init',  array(&$ueg_leaflet, 'create_convio_post_types'));
+	// add_action('init',  array(&$ueg_leaflet, 'create_leaflet_post_types'));
 	
 	// Scripting + Styling
 	wp_register_script('ueg_leaflet_script', plugins_url('script.js', __FILE__));
